@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: policy
+  namespace: openshift-gitops
+spec:
+  destination:
+    namespace: managed-cluster-1
+    server: 'https://kubernetes.default.svc'
+  project: default
+  source:
+    path: cluster-1
+    repoURL: 'git@github.com:albertofilice/rhacm-policies.git'
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      # - CreateNamespace=true
+      - Validate=true
+      - RespectIgnoreDifferences=true
