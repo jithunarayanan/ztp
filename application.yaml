@@ -10,7 +10,7 @@ spec:
   project: default
   source:
     path: cluster-1
-    repoURL: 'git@github.com:albertofilice/rhacm-policies.git'
+    repoURL: 'https://github.com/jithunarayanan/ztp.git'
     targetRevision: HEAD
   syncPolicy:
     automated:
