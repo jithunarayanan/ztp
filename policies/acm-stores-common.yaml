@@ -1,0 +1,76 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: common-latest
+placementBindingDefaults:
+  name: common-placement-binding
+policyDefaults:
+  # categories: []
+  #controls:
+  #  - PR.DS-1 Data-at-rest
+  namespace: ztp-common
+  # Use an existing placement rule so that placement bindings can be consolidated
+  placement:
+    labelSelector:
+      common: "true"
+  remediationAction: enforce
+  severity: low
+  # standards: []
+  namespaceSelector:
+    exclude:
+      - kube-*
+    include:
+      - '*'
+  evaluationInterval:
+    compliant: 10m
+    noncompliant: 10s
+policies:
+- name: common-latest-config-policy
+  policyAnnotations:
+    ran.openshift.io/ztp-deploy-wave: "1"
+  manifests:
+    - path: operators/MaxPods500KubeletConfig.yaml
+    - path: operators/MaxPods500RoleCMPatch.yaml
+      patches:
+      - metadata:
+          name: master  
+#    - path: operators/ChronyRoleCM.yaml
+#      patches:
+#      - metadata:
+#          labels:
+#              machineconfiguration.openshift.io/role: worker
+#          name: 55-worker-chrony-configuration
+#    - path: operators/ChronyRoleCM.yaml
+#      complianceType: mustnothave
+#      patches:
+#      - metadata:
+#          labels:
+#              machineconfiguration.openshift.io/role: worker
+#          name: 55-workers-chrony-configuration     
+#    - path: operators/ChronyRoleCM.yaml
+#      patches:
+#      - metadata:
+#          labels:
+#              machineconfiguration.openshift.io/role: master
+#          name: 55-master-chrony-configuration          
+#    - path: operators/ReduceMonitoringFootprint.yaml
+- name: common-latest-subscriptions-policy
+  policyAnnotations:
+    ran.openshift.io/ztp-deploy-wave: "2"
+  manifests:
+
+    #LVM operator
+    #This operator create a storage class for pods and VMs from 
+    #local disk
+    - path: operators/StorageLVMSubscriptionNS.yaml
+    - path: operators/StorageLVMCluster.yaml
+    - path: operators/StorageLVMSubscription.yaml
+      patches:
+      - metadata:
+          name: lvms-operator
+        spec:
+          channel: stable-4.18    
+    - path: operators/StorageLVMSubscriptionOperGroup.yaml
+    - path: operators/StorageLVMStorageClass.yaml
+    - path: operators/StorageLVMSnapshotClass.yaml
+

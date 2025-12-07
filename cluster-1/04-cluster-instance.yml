@@ -1,0 +1,88 @@
+---
+apiVersion: siteconfig.open-cluster-management.io/v1alpha1
+kind: ClusterInstance
+metadata:
+  name: managed-cluster-1
+  namespace: managed-cluster-1
+spec:
+  baseDomain: opra.tech
+  pullSecretRef:
+    name: pull-secret-managed-cluster-1
+  clusterImageSetNameRef: img4.18.29-x86-64-appsub
+  sshPublicKey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN7e7WAd600zIMdwj+Puc0OT/aklIjAwAOjdxq7L1zAl deploy@deploy"
+  clusterName: managed-cluster-1
+  networkType: OVNKubernetes
+  templateRefs:
+    - name: ai-custom-cluster-templates-v1
+      namespace: custom-templates
+  # extraManifestsRefs:
+  #   - name: chrony-conf-master-worker
+  #   - name: dns-drop-conf-master
+  extraLabels:
+    ManagedCluster:
+      common: "true"
+      # everseen-5.2: "true"
+      # posim-2.0: "true"
+      # sites: 7003smnpoc003
+  clusterNetwork:
+    - cidr: 100.104.0.0/14
+      hostPrefix: 23
+  machineNetwork:
+    - cidr: 10.0.0.0/24
+  serviceNetwork:
+    - cidr: 100.108.0.0/16
+  additionalNTPSources:
+    - 10.23.128.12
+    - 10.56.0.202
+      #  mirrorRegistryRef:
+      #name: mirror-registry-config
+      #namespace: managed-cluster
+  # proxy:
+  #   httpProxy: http://app-proxy.woolworths.com.au:80
+  #   httpsProxy: http://app-proxy.woolworths.com.au:80
+  #   noProxy: 10.17.121.0/24,10.80.248.0/24,10.80.200.0/24,10.48.194.0/24,localhost,127.0.0.1,.stores.wowcorp.com.au,.stores.dev.wowcorp.com.au,.wowcorp.com.au,.woolworths.com.au
+  nodes:
+    - hostName: mcluster1.opra.tech
+      role: master
+      templateRefs:
+        - name: ai-custom-node-templates-v1
+          namespace: custom-templates
+      bmcAddress: idrac-virtualmedia://10.0.0.8/redfish/v1/Systems/System.Embedded.1
+      bmcCredentialsName:
+        name: bmc-secret-managed-cluster-1
+      bootMACAddress: "e4:43:4b:69:0a:8c"
+      bootMode: UEFI
+      AutomatedCleaningMode: metadata
+      IronicInspect: true
+      rootDeviceHints:
+        # serialNumber: "109011963500745"
+        wwn: "0x64cd98f04f96c9002f98fbc42612e341"
+      nodeNetwork:
+        interfaces:
+          - macAddress: "e4:43:4b:69:0a:8c"
+            name: eno12399
+          # - macAddress: 84:16:0c:ac:2a:ef
+          #   name: eno12409
+        config:
+          dns-resolver:
+            config:
+              server:
+                - 10.0.0.6
+                - 8.8.8.8
+          interfaces:
+            - name: eno12399
+              state: up
+              ipv4:
+                dhcp: false
+                address:
+                  - ip: 10.0.0.10
+                    prefix-length: 24
+                enabled: true
+              ipv6:
+                enabled: false
+    
+          routes:
+            config:
+              - destination: 0.0.0.0/0
+                next-hop-address: 10.0.0.1
+                next-hop-interface: eno12399
